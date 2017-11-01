@@ -14,13 +14,10 @@ namespace AlarmSurvivalTest
     [Activity(Label = "AlarmSurvivalTest", MainLauncher = true)]
     public class MainActivity : Activity
     {
-        private object timePicker;
-
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
 
-            // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
 
             TimePicker timePicker = FindViewById<TimePicker>(Resource.Id.timePicker);
@@ -38,7 +35,6 @@ namespace AlarmSurvivalTest
                 string dateTimeString = date +" "+ hh +":"+ mm +":"+"00.00";
                 DateTime dateTime = Convert.ToDateTime(dateTimeString);
                 TimeSpan span = dateTime - DateTime.Now;
-                string spanString = span.ToString();
                 long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
 
                 Intent intent = new Intent(this, typeof(MyTestReceiver));
@@ -46,9 +42,7 @@ namespace AlarmSurvivalTest
                 AlarmManager alarmManager = (AlarmManager)this.GetSystemService(Context.AlarmService);
                 alarmManager.Set(AlarmType.RtcWakeup, schedule, pendingIntent);
             };
-           
         }
-
     }
 
     [BroadcastReceiver(Enabled = true)]
