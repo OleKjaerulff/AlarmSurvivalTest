@@ -10,6 +10,8 @@ namespace AlarmSurvivalTest
     using Android.OS;
     using Android.Content;
     using System;
+    using Android.Media;
+    using Android.Content.PM;
 
     [Activity(Label = "AlarmSurvivalTest", MainLauncher = true)]
     public class MainActivity : Activity
@@ -37,10 +39,10 @@ namespace AlarmSurvivalTest
                 TimeSpan span = dateTime - DateTime.Now;
                 long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
 
-                Intent intent = new Intent(this, typeof(MyTestReceiver));
-                PendingIntent pendingIntent = PendingIntent.GetBroadcast(this, 0, intent, PendingIntentFlags.CancelCurrent);
+                Intent wake = new Intent(this, typeof(MyTestReceiver));
+                PendingIntent pendingIntent = PendingIntent.GetBroadcast(this, 0, wake, PendingIntentFlags.CancelCurrent);
                 AlarmManager alarmManager = (AlarmManager)this.GetSystemService(Context.AlarmService);
-                alarmManager.Set(AlarmType.RtcWakeup, schedule, pendingIntent);
+                alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, schedule, pendingIntent);
             };
         }
     }
@@ -49,11 +51,18 @@ namespace AlarmSurvivalTest
     //no intent filter needed here
     public class MyTestReceiver : BroadcastReceiver
     {
-        public override void OnReceive(Context context, Intent intent)
+        public override void OnReceive(Context context, Intent wake)
         {
             Toast toast = Toast.MakeText(Application.Context, "Hello", ToastLength.Long);
             toast.Show();
+
+            MediaPlayer badinerie;
+            badinerie = MediaPlayer.Create(context, Resource.Raw.Badinerie);
+            badinerie.Start();
+           
+            var intent = new Intent(context, typeof(MainActivity));
+            intent.SetFlags(ActivityFlags.NewTask);
+            context.StartActivity(intent);
         }
     }
-
 }

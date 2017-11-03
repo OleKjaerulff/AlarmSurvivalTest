@@ -44,11 +44,11 @@ namespace AlarmSurvivalTest
 		public partial class Id
 		{
 			
-			// aapt resource value: 0x7f040000
-			public const int timePicker = 2130968576;
+			// aapt resource value: 0x7f050000
+			public const int timePicker = 2131034112;
 			
-			// aapt resource value: 0x7f040001
-			public const int timePickerDone = 2130968577;
+			// aapt resource value: 0x7f050001
+			public const int timePickerDone = 2131034113;
 			
 			static Id()
 			{
@@ -76,11 +76,27 @@ namespace AlarmSurvivalTest
 			}
 		}
 		
-		public partial class String
+		public partial class Raw
 		{
 			
 			// aapt resource value: 0x7f030000
-			public const int app_name = 2130903040;
+			public const int Badinerie = 2130903040;
+			
+			static Raw()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Raw()
+			{
+			}
+		}
+		
+		public partial class String
+		{
+			
+			// aapt resource value: 0x7f040000
+			public const int app_name = 2130968576;
 			
 			static String()
 			{
