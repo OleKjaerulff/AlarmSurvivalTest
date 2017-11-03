@@ -12,6 +12,7 @@ namespace AlarmSurvivalTest
     using System;
     using Android.Media;
     using Android.Content.PM;
+    using Android.Preferences;
 
     [Activity(Label = "AlarmSurvivalTest", MainLauncher = true)]
     public class MainActivity : Activity
@@ -21,6 +22,9 @@ namespace AlarmSurvivalTest
             base.OnCreate(savedInstanceState);
 
             SetContentView(Resource.Layout.Main);
+
+            ISharedPreferences prefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
+            ISharedPreferencesEditor editor = prefs.Edit();
 
             TimePicker timePicker = FindViewById<TimePicker>(Resource.Id.timePicker);
             Button timePickerDone = FindViewById<Button>(Resource.Id.timePickerDone);
@@ -36,6 +40,10 @@ namespace AlarmSurvivalTest
                 string mm = timePicker.Minute.ToString("D2");
                 string dateTimeString = date +" "+ hh +":"+ mm +":"+"00.00";
                 DateTime dateTime = Convert.ToDateTime(dateTimeString);
+
+                editor.PutString("dateTimeString", dateTimeString);
+                editor.Apply();
+
                 TimeSpan span = dateTime - DateTime.Now;
                 long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
 
@@ -53,7 +61,12 @@ namespace AlarmSurvivalTest
     {
         public override void OnReceive(Context context, Intent wake)
         {
-            Toast toast = Toast.MakeText(Application.Context, "Hello", ToastLength.Long);
+
+            ISharedPreferences receiverprefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
+            ISharedPreferencesEditor editor = receiverprefs.Edit();
+            string text = receiverprefs.GetString("dateTimeString", "");
+
+            Toast toast = Toast.MakeText(Application.Context, text, ToastLength.Long);
             toast.Show();
 
             MediaPlayer badinerie;
