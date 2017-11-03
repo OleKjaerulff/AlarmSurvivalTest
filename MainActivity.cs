@@ -30,8 +30,12 @@ namespace AlarmSurvivalTest
             Button timePickerDone = FindViewById<Button>(Resource.Id.timePickerDone);
 
             timePicker.SetIs24HourView(Java.Lang.Boolean.True);
-            timePicker.Hour = 24;
-            timePicker.Minute = 0;
+
+            if (prefs.GetString("hour", "") == "") {timePicker.Hour = 0;}
+            else timePicker.Hour = int.Parse(prefs.GetString("hour", ""));
+
+            if (prefs.GetString("minute", "") == "") {timePicker.Minute = 0;}
+            else timePicker.Minute = int.Parse(prefs.GetString("minute", ""));
 
             timePickerDone.Click += (object sender, EventArgs e) =>
             {
@@ -42,6 +46,10 @@ namespace AlarmSurvivalTest
                 DateTime dateTime = Convert.ToDateTime(dateTimeString);
 
                 editor.PutString("dateTimeString", dateTimeString);
+                editor.Apply();
+                editor.PutString("hour", hh);
+                editor.Apply();
+                editor.PutString("minute", mm);
                 editor.Apply();
 
                 TimeSpan span = dateTime - DateTime.Now;
@@ -72,10 +80,43 @@ namespace AlarmSurvivalTest
             MediaPlayer badinerie;
             badinerie = MediaPlayer.Create(context, Resource.Raw.Badinerie);
             badinerie.Start();
-           
+           /*
             var intent = new Intent(context, typeof(MainActivity));
             intent.SetFlags(ActivityFlags.NewTask);
             context.StartActivity(intent);
+            */
+        }
+    }
+    [BroadcastReceiver(Enabled = true, Exported = true, Permission = "RECEIVE_BOOT_COMPLETED")]
+    [IntentFilter(new[] { Android.Content.Intent.ActionBootCompleted })]
+    public class RebootReceiver : BroadcastReceiver
+    {
+        public override void OnReceive(Context context, Intent intent)
+        {
+            /*
+            MediaPlayer badinerie;
+            badinerie = MediaPlayer.Create(context, Resource.Raw.Badinerie);
+            badinerie.Start();
+            */
+            ISharedPreferences bootreceiverprefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
+            ISharedPreferencesEditor editor = bootreceiverprefs.Edit();
+            string dateTimeString = bootreceiverprefs.GetString("dateTimeString", "");
+
+            //Toast toastfirst = Toast.MakeText(Application.Context, "rebooted", ToastLength.Long);
+            //toastfirst.Show();
+
+            //Toast toast = Toast.MakeText(Application.Context, dateTimeString, ToastLength.Long);    
+            //toast.Show();
+
+            DateTime dateTime = Convert.ToDateTime(dateTimeString);
+            TimeSpan span = dateTime - DateTime.Now;
+            long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
+
+            Intent wake = new Intent(context, typeof(MyTestReceiver));
+            PendingIntent pendingIntent = PendingIntent.GetBroadcast(context, 0, wake, PendingIntentFlags.CancelCurrent);
+            AlarmManager alarmManager = (AlarmManager)context.GetSystemService(Context.AlarmService);
+            alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, schedule, pendingIntent);
+           
         }
     }
 }
