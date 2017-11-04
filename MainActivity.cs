@@ -44,15 +44,19 @@ namespace AlarmSurvivalTest
                 string mm = timePicker.Minute.ToString("D2");
                 string dateTimeString = date +" "+ hh +":"+ mm +":"+"00.00";
                 DateTime dateTime = Convert.ToDateTime(dateTimeString);
-
+                
                 editor.PutString("dateTimeString", dateTimeString);
                 editor.Apply();
                 editor.PutString("hour", hh);
                 editor.Apply();
                 editor.PutString("minute", mm);
                 editor.Apply();
-
+                
                 TimeSpan span = dateTime - DateTime.Now;
+
+                //Toast toast = Toast.MakeText(Application.Context, span.ToString(), ToastLength.Long);
+                //toast.Show();
+
                 long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
 
                 Intent wake = new Intent(this, typeof(MyTestReceiver));
@@ -62,7 +66,7 @@ namespace AlarmSurvivalTest
             };
         }
     }
-
+    
     [BroadcastReceiver(Enabled = true)]
     //no intent filter needed here
     public class MyTestReceiver : BroadcastReceiver
@@ -80,13 +84,14 @@ namespace AlarmSurvivalTest
             MediaPlayer badinerie;
             badinerie = MediaPlayer.Create(context, Resource.Raw.Badinerie);
             badinerie.Start();
-           /*
+            
             var intent = new Intent(context, typeof(MainActivity));
             intent.SetFlags(ActivityFlags.NewTask);
             context.StartActivity(intent);
-            */
         }
+
     }
+
     [BroadcastReceiver(Enabled = true, Exported = true, Permission = "RECEIVE_BOOT_COMPLETED")]
     [IntentFilter(new[] { Android.Content.Intent.ActionBootCompleted })]
     public class RebootReceiver : BroadcastReceiver
