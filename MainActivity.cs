@@ -62,7 +62,7 @@ namespace AlarmSurvivalTest
                 Intent wake = new Intent(this, typeof(MyTestReceiver));
                 PendingIntent pendingIntent = PendingIntent.GetBroadcast(this, 0, wake, PendingIntentFlags.CancelCurrent);
                 AlarmManager alarmManager = (AlarmManager)this.GetSystemService(Context.AlarmService);
-                alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, schedule, pendingIntent);
+                alarmManager.SetInexactRepeating(AlarmType.RtcWakeup, schedule, 1000 * 60 * 5, pendingIntent);
             };
         }
     }
@@ -120,8 +120,8 @@ namespace AlarmSurvivalTest
             Intent wake = new Intent(context, typeof(MyTestReceiver));
             PendingIntent pendingIntent = PendingIntent.GetBroadcast(context, 0, wake, PendingIntentFlags.CancelCurrent);
             AlarmManager alarmManager = (AlarmManager)context.GetSystemService(Context.AlarmService);
-            alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, schedule, pendingIntent);
-           
+            alarmManager.SetInexactRepeating(AlarmType.RtcWakeup, schedule, 1000 * 60 * 5, pendingIntent);
+
         }
     }
 }
