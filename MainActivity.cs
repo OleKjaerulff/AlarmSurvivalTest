@@ -36,8 +36,8 @@ namespace AlarmSurvivalTest
             MediaPlayer badinerie;
             badinerie = MediaPlayer.Create(this, Resource.Raw.Badinerie);
 
-            if (alarmTriggered == true){ 
-            badinerie.Start();
+            if (alarmTriggered == true){
+                badinerie.Start();
                 editor.PutBoolean("alarmTriggered", false);
                 editor.Apply();
             }
@@ -50,9 +50,7 @@ namespace AlarmSurvivalTest
             if (prefs.GetString("minute", "") == "") {timePicker.Minute = 0;}
             else timePicker.Minute = int.Parse(prefs.GetString("minute", ""));
 
-            IntervalField.Text = prefs.GetInt("interval", 0).ToString();
-
-        
+            IntervalField.Text = prefs.GetString("intervaltext", "");
 
             timePickerDone.Click += (object sender, EventArgs e) =>
             {
@@ -62,7 +60,8 @@ namespace AlarmSurvivalTest
                 string dateTimeString = date +" "+ hh +":"+ mm +":"+"00.00";
                 DateTime dateTime = Convert.ToDateTime(dateTimeString);
 
-                int interval = int.Parse(IntervalField.Text);
+                string intervaltext = IntervalField.Text;
+                int interval = int.Parse(intervaltext);
 
                 editor.PutString("hour", hh);
                 editor.Apply();
@@ -70,7 +69,7 @@ namespace AlarmSurvivalTest
                 editor.Apply();
                 editor.PutString("dateTimeString", dateTimeString);
                 editor.Apply();
-                editor.PutInt("interval", interval);
+                editor.PutString("intervaltext", intervaltext);
                 editor.Apply();
 
                 TimeSpan span = dateTime - DateTime.Now;
@@ -85,12 +84,38 @@ namespace AlarmSurvivalTest
                 alarmManager.SetInexactRepeating(AlarmType.RtcWakeup, schedule, 1000 * 60 * interval, pendingIntent);
             };
 
+            bool rebooted = prefs.GetBoolean("rebooted", false);
+
+            if (rebooted == true)
+            {
+                timePickerDone.PerformClick();
+                /*
+                editor.PutBoolean("rebooted", false);
+                editor.Apply();
+
+                string dateTimeString = prefs.GetString("dateTimeString", "");
+                string intervaltext = prefs.GetString("intervaltext", "");
+                int interval = int.Parse(intervaltext);
+
+                DateTime dateTime = Convert.ToDateTime(dateTimeString);
+                TimeSpan span = dateTime - DateTime.Now;
+
+                long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
+                Intent wake = new Intent(this, typeof(MyTestReceiver));
+                PendingIntent pendingIntent = PendingIntent.GetBroadcast(this, 0, wake, PendingIntentFlags.CancelCurrent);
+                AlarmManager alarmManager = (AlarmManager)this.GetSystemService(Context.AlarmService);
+                alarmManager.SetInexactRepeating(AlarmType.RtcWakeup, schedule, 1000 * 60 * interval, pendingIntent);
+                */
+
+            }
+
             stopAlarm.Click += (object sender, EventArgs e) =>
             {
                 badinerie.Stop();
+                badinerie.Start();
+                editor.PutBoolean("alarmTriggered", false);
+                editor.Apply();
             };
-
-            
         }
     }
     
@@ -103,6 +128,8 @@ namespace AlarmSurvivalTest
             ISharedPreferencesEditor editor = prefs.Edit();
             editor.PutBoolean("alarmTriggered", true);
             editor.Apply();
+
+
 
             var intent = new Intent(context, typeof(MainActivity));
             intent.SetFlags(ActivityFlags.NewTask);
@@ -118,23 +145,19 @@ namespace AlarmSurvivalTest
         {
             ISharedPreferences prefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
             ISharedPreferencesEditor editor = prefs.Edit();
-            string dateTimeString = prefs.GetString("dateTimeString", "");
-            int interval = prefs.GetInt("interval", 0);
 
-            editor.PutBoolean("alarmTriggered", true);
+            editor.PutBoolean("rebooted", true);
             editor.Apply();
+
+            var intentboot = new Intent(context, typeof(MainActivity));
+            intentboot.SetFlags(ActivityFlags.NewTask);
+            context.StartActivity(intentboot);
 
             //Toast toastfirst = Toast.MakeText(Application.Context, "rebooted", ToastLength.Long);
             //toastfirst.Show();
-
-            DateTime dateTime = Convert.ToDateTime(dateTimeString);
-            TimeSpan span = dateTime - DateTime.Now;
-
-            long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
-            Intent wake = new Intent(context, typeof(MyTestReceiver));
-            PendingIntent pendingIntent = PendingIntent.GetBroadcast(context, 0, wake, PendingIntentFlags.CancelCurrent);
-            AlarmManager alarmManager = (AlarmManager)context.GetSystemService(Context.AlarmService);
-            alarmManager.SetInexactRepeating(AlarmType.RtcWakeup, schedule, 1000 * 60 * interval, pendingIntent);
+            /*
+            
+            */
         }
     }
 }
