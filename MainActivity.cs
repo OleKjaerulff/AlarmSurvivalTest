@@ -23,11 +23,24 @@ namespace AlarmSurvivalTest
 
             SetContentView(Resource.Layout.Main);
 
+            TimePicker timePicker = FindViewById<TimePicker>(Resource.Id.timePicker);
+            Button timePickerDone = FindViewById<Button>(Resource.Id.timePickerDone);
+            Button stopAlarm = FindViewById<Button>(Resource.Id.stopAlarm);
+            EditText IntervalField = FindViewById<EditText>(Resource.Id.IntervalField);
+
             ISharedPreferences prefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
             ISharedPreferencesEditor editor = prefs.Edit();
 
-            TimePicker timePicker = FindViewById<TimePicker>(Resource.Id.timePicker);
-            Button timePickerDone = FindViewById<Button>(Resource.Id.timePickerDone);
+            bool alarmTriggered = prefs.GetBoolean("alarmTriggered", false);
+
+            MediaPlayer badinerie;
+            badinerie = MediaPlayer.Create(this, Resource.Raw.Badinerie);
+
+            if (alarmTriggered == true){ 
+            badinerie.Start();
+                editor.PutBoolean("alarmTriggered", false);
+                editor.Apply();
+            }
 
             timePicker.SetIs24HourView(Java.Lang.Boolean.True);
 
@@ -37,6 +50,10 @@ namespace AlarmSurvivalTest
             if (prefs.GetString("minute", "") == "") {timePicker.Minute = 0;}
             else timePicker.Minute = int.Parse(prefs.GetString("minute", ""));
 
+            IntervalField.Text = prefs.GetInt("interval", 0).ToString();
+
+        
+
             timePickerDone.Click += (object sender, EventArgs e) =>
             {
                 string date = DateTime.Today.ToShortDateString();
@@ -44,52 +61,53 @@ namespace AlarmSurvivalTest
                 string mm = timePicker.Minute.ToString("D2");
                 string dateTimeString = date +" "+ hh +":"+ mm +":"+"00.00";
                 DateTime dateTime = Convert.ToDateTime(dateTimeString);
-                
-                editor.PutString("dateTimeString", dateTimeString);
-                editor.Apply();
+
+                int interval = int.Parse(IntervalField.Text);
+
                 editor.PutString("hour", hh);
                 editor.Apply();
                 editor.PutString("minute", mm);
                 editor.Apply();
-                
+                editor.PutString("dateTimeString", dateTimeString);
+                editor.Apply();
+                editor.PutInt("interval", interval);
+                editor.Apply();
+
                 TimeSpan span = dateTime - DateTime.Now;
 
                 //Toast toast = Toast.MakeText(Application.Context, span.ToString(), ToastLength.Long);
                 //toast.Show();
 
                 long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
-
                 Intent wake = new Intent(this, typeof(MyTestReceiver));
                 PendingIntent pendingIntent = PendingIntent.GetBroadcast(this, 0, wake, PendingIntentFlags.CancelCurrent);
                 AlarmManager alarmManager = (AlarmManager)this.GetSystemService(Context.AlarmService);
-                alarmManager.SetInexactRepeating(AlarmType.RtcWakeup, schedule, 1000 * 60 * 5, pendingIntent);
+                alarmManager.SetInexactRepeating(AlarmType.RtcWakeup, schedule, 1000 * 60 * interval, pendingIntent);
             };
+
+            stopAlarm.Click += (object sender, EventArgs e) =>
+            {
+                badinerie.Stop();
+            };
+
+            
         }
     }
     
     [BroadcastReceiver(Enabled = true)]
-    //no intent filter needed here
     public class MyTestReceiver : BroadcastReceiver
     {
         public override void OnReceive(Context context, Intent wake)
         {
+            ISharedPreferences prefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
+            ISharedPreferencesEditor editor = prefs.Edit();
+            editor.PutBoolean("alarmTriggered", true);
+            editor.Apply();
 
-            ISharedPreferences receiverprefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
-            ISharedPreferencesEditor editor = receiverprefs.Edit();
-            string text = receiverprefs.GetString("dateTimeString", "");
-
-            Toast toast = Toast.MakeText(Application.Context, text, ToastLength.Long);
-            toast.Show();
-
-            MediaPlayer badinerie;
-            badinerie = MediaPlayer.Create(context, Resource.Raw.Badinerie);
-            badinerie.Start();
-            
             var intent = new Intent(context, typeof(MainActivity));
             intent.SetFlags(ActivityFlags.NewTask);
             context.StartActivity(intent);
         }
-
     }
 
     [BroadcastReceiver(Enabled = true, Exported = true, Permission = "RECEIVE_BOOT_COMPLETED")]
@@ -98,30 +116,25 @@ namespace AlarmSurvivalTest
     {
         public override void OnReceive(Context context, Intent intent)
         {
-            /*
-            MediaPlayer badinerie;
-            badinerie = MediaPlayer.Create(context, Resource.Raw.Badinerie);
-            badinerie.Start();
-            */
-            ISharedPreferences bootreceiverprefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
-            ISharedPreferencesEditor editor = bootreceiverprefs.Edit();
-            string dateTimeString = bootreceiverprefs.GetString("dateTimeString", "");
+            ISharedPreferences prefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
+            ISharedPreferencesEditor editor = prefs.Edit();
+            string dateTimeString = prefs.GetString("dateTimeString", "");
+            int interval = prefs.GetInt("interval", 0);
+
+            editor.PutBoolean("alarmTriggered", true);
+            editor.Apply();
 
             //Toast toastfirst = Toast.MakeText(Application.Context, "rebooted", ToastLength.Long);
             //toastfirst.Show();
 
-            //Toast toast = Toast.MakeText(Application.Context, dateTimeString, ToastLength.Long);    
-            //toast.Show();
-
             DateTime dateTime = Convert.ToDateTime(dateTimeString);
             TimeSpan span = dateTime - DateTime.Now;
-            long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
 
+            long schedule = (long)(Java.Lang.JavaSystem.CurrentTimeMillis() + span.TotalMilliseconds);
             Intent wake = new Intent(context, typeof(MyTestReceiver));
             PendingIntent pendingIntent = PendingIntent.GetBroadcast(context, 0, wake, PendingIntentFlags.CancelCurrent);
             AlarmManager alarmManager = (AlarmManager)context.GetSystemService(Context.AlarmService);
-            alarmManager.SetInexactRepeating(AlarmType.RtcWakeup, schedule, 1000 * 60 * 5, pendingIntent);
-
+            alarmManager.SetInexactRepeating(AlarmType.RtcWakeup, schedule, 1000 * 60 * interval, pendingIntent);
         }
     }
 }

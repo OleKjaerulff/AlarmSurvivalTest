@@ -44,6 +44,15 @@ namespace AlarmSurvivalTest
 		public partial class Id
 		{
 			
+			// aapt resource value: 0x7f050004
+			public const int IntervalField = 2131034116;
+			
+			// aapt resource value: 0x7f050002
+			public const int stopAlarm = 2131034114;
+			
+			// aapt resource value: 0x7f050003
+			public const int textView1 = 2131034115;
+			
 			// aapt resource value: 0x7f050000
 			public const int timePicker = 2131034112;
 			
